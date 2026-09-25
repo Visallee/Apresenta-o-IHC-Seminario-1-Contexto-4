@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyitly — Contexto 4 | IHC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F6F2;
+  --panel:#FFFFFF;
+  --ink:#16232C;
+  --ink-soft:#4B5A62;
+  --line:#DCE0DA;
+  --teal:#2F6F62;
+  --teal-deep:#1F4B5F;
+  --amber:#C77B3B;
+  --amber-soft:#F2E4D3;
+  font-size:16px;
+}
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:'Newsreader',serif;font-weight:600;margin:0;line-height:1.15;}
+p{margin:0 0 1em 0;}
+p:last-child{margin-bottom:0;}
+
+#deck{
+  position:relative;
+  width:100vw;
+  height:100vh;
+}
+.slide{
+  position:absolute;
+  inset:0;
+  display:none;
+  padding:64px 88px 96px 88px;
+  overflow-y:auto;
+}
+.slide.active{display:flex;flex-direction:column;}
+
+/* nav click zones */
+.zone{position:fixed;top:0;bottom:0;width:50%;z-index:5;cursor:pointer;}
+.zone.left{left:0;}
+.zone.right{right:0;}
+
+/* footer */
+#footer{
+  position:fixed;left:0;right:0;bottom:0;height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  background:linear-gradient(to top, rgba(245,246,242,1) 60%, rgba(245,246,242,0));
+  z-index:10;pointer-events:none;
+  font-size:.8rem;color:var(--ink-soft);letter-spacing:.02em;
+}
+#progress-track{position:fixed;top:0;left:0;right:0;height:3px;background:var(--line);z-index:11;}
+#progress-bar{height:100%;background:var(--teal);width:0%;transition:width .25s ease;}
+#pagenum{font-variant-numeric:tabular-nums;font-weight:500;color:var(--ink);}
+
+.kicker{
+  display:inline-block;font-size:.78rem;font-weight:600;color:var(--teal-deep);
+  letter-spacing:.03em;margin-bottom:14px;
+}
+.slide-title{font-size:2.1rem;color:var(--ink);max-width:920px;margin-bottom:28px;}
+.slide-body{max-width:840px;font-size:1.08rem;line-height:1.62;color:var(--ink);}
+.slide-body p{margin-bottom:1.05em;}
+.slide-body strong{color:var(--teal-deep);font-weight:600;}
+.slide-body em{font-style:italic;color:var(--ink-soft);}
+
+.content-wrap{flex:1;display:flex;flex-direction:column;justify-content:center;}
+
+/* Cover slide */
+.cover .content-wrap{justify-content:center;align-items:flex-start;}
+.cover .institute{font-size:.95rem;color:var(--ink-soft);margin-bottom:36px;letter-spacing:.02em;}
+.cover h1{font-size:2.9rem;max-width:820px;margin-bottom:18px;}
+.cover .subtitle{font-size:1.15rem;color:var(--teal-deep);margin-bottom:44px;font-family:'Newsreader',serif;font-style:italic;}
+.cover .meta-grid{display:grid;grid-template-columns:140px 1fr;gap:6px 20px;font-size:.98rem;max-width:640px;}
+.cover .meta-grid dt{color:var(--ink-soft);}
+.cover .meta-grid dd{margin:0;font-weight:500;}
+.cover .rule{width:64px;height:3px;background:var(--amber);margin:28px 0;}
+
+/* Sumario */
+.toc-list{list-style:none;margin:0;padding:0;max-width:760px;display:grid;gap:14px;}
+.toc-list li{display:flex;align-items:baseline;gap:18px;font-size:1.12rem;padding-bottom:14px;border-bottom:1px solid var(--line);}
+.toc-list .num{font-family:'Newsreader',serif;font-size:1.05rem;color:var(--amber);font-weight:600;min-width:26px;}
+.toc-list .lbl{color:var(--ink);}
+.toc-list .sub{color:var(--ink-soft);font-size:.92rem;display:block;margin-top:2px;}
+
+/* Definition / stakeholder cards */
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;max-width:920px;}
+.card{border:1px solid var(--line);background:var(--panel);border-radius:4px;padding:20px 22px;}
+.card h3{font-size:1.05rem;color:var(--teal-deep);margin-bottom:8px;}
+.card p{font-size:.98rem;color:var(--ink-soft);margin:0;}
+
+/* Criteria table */
+.crit-list{display:grid;gap:14px;max-width:860px;}
+.crit-row{display:grid;grid-template-columns:190px 1fr;gap:20px;padding:14px 0;border-bottom:1px solid var(--line);align-items:start;}
+.crit-row .label{font-weight:600;color:var(--teal-deep);font-family:'Newsreader',serif;font-size:1.05rem;}
+.crit-row .desc{font-size:.98rem;color:var(--ink);line-height:1.55;}
+
+/* Images */
+.img-row{display:flex;gap:32px;align-items:flex-start;justify-content:center;margin-top:8px;flex-wrap:wrap;}
+.img-block{flex:1;min-width:280px;max-width:440px;text-align:center;}
+.img-block img{max-width:80%;max-height:44vh;object-fit:contain;border:1px solid var(--line);background:#fff;border-radius:6px;box-shadow:0 4px 18px rgba(22,35,44,.08);}
+.img-block figcaption{margin-top:10px;font-size:.86rem;color:var(--ink-soft);font-style:italic;}
+.img-single .img-block{max-width:520px;}
+
+/* Reference slide */
+.ref-box{border-left:3px solid var(--amber);background:var(--amber-soft);padding:18px 22px;max-width:760px;font-family:'Newsreader',serif;font-style:italic;font-size:1.02rem;color:var(--ink);}
+
+/* Figma prototype buttons */
+.btn-figma, .btn-figma-secondary{
+  position:relative;
+  z-index:20;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  font-family:'Inter',system-ui,sans-serif;
+  font-weight:700;
+  border-radius:999px;
+  border:none;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+.btn-figma{
+  background:#16121F;
+  color:#FFFFFF;
+  font-size:1rem;
+  padding:15px 30px;
+  box-shadow:0 8px 22px rgba(22,18,31,.28);
+}
+.btn-figma::before{
+  content:'';
+  width:9px;height:9px;border-radius:2px;
+  background:linear-gradient(135deg,#A259FF 0%,#1ABCFE 50%,#0ACF83 100%);
+  flex-shrink:0;
+}
+.btn-figma:hover{
+  background:#2A2140;
+  transform:translateY(-2px) scale(1.02);
+  box-shadow:0 12px 28px rgba(22,18,31,.36);
+}
+.btn-figma:active{transform:translateY(0) scale(.99);}
+
+.btn-figma-secondary{
+  background:#FFFFFF;
+  color:#16121F;
+  font-size:.92rem;
+  padding:11px 22px;
+  border:1.5px solid #A259FF;
+  box-shadow:0 3px 10px rgba(162,89,255,.14);
+}
+.btn-figma-secondary:hover{
+  background:#F4EBFF;
+  transform:translateY(-1px) scale(1.015);
+  box-shadow:0 6px 16px rgba(162,89,255,.24);
+}
+.btn-figma-secondary:active{transform:translateY(0) scale(.99);}
+
+.cover .figma-cta{margin-top:8px;}
+
+.figma-banner{
+  position:relative;
+  z-index:15;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+  background:#F4EBFF;
+  border:1px solid #DCC7F5;
+  border-radius:10px;
+  padding:16px 22px;
+  margin-bottom:26px;
+  max-width:840px;
+}
+.figma-banner p{margin:0;font-size:.95rem;color:var(--ink);max-width:480px;line-height:1.5;}
+
+@media (max-width:820px){
+  .slide{padding:32px 24px 88px 24px;}
+  .slide-title{font-size:1.55rem;}
+  .cover h1{font-size:2rem;}
+  .card-grid{grid-template-columns:1fr;}
+  .crit-row{grid-template-columns:1fr;gap:4px;}
+  .img-row{flex-direction:column;align-items:center;}
+}
+</style>
+</head>
+<body>
+
+<div id="progress-track"><div id="progress-bar"></div></div>
+<div class="zone left" id="zoneLeft" aria-label="Slide anterior"></div>
+<div class="zone right" id="zoneRight" aria-label="Próximo slide"></div>
+<div id="deck"></div>
+<div id="footer">
+  <span id="footer-left">Buyitly · Contexto 4 · IHC</span>
+  <span id="pagenum">1 / 20</span>
+</div>
+
+<script>
+const slides = [
+
+// 1 — CAPA
+{
+  type:'cover',
+  html:`
+    <div class="content-wrap">
+      <div class="institute">Instituto Federal de Sergipe — IFS</div>
+      <h1>Análise e Prototipação do Contexto 4:<br>o Fluxo de Devolução de E-commerce</h1>
+      <div class="subtitle">Seminário 1 — Buyitly, um aplicativo de logística reversa centrado no usuário</div>
+      <div class="rule"></div>
+      <dl class="meta-grid">
+        <dt>Disciplina</dt><dd>Introdução à Interação Humano-Computador</dd>
+        <dt>Orientador</dt><dd>Prof. Dr. Juno Vitorino</dd>
+        <dt>Alunos</dt><dd>Victor Silva do Valle · Lucas Emanuel Dias dos Santos Oliveira</dd>
+      </dl>
+      <div class="figma-cta">
+        <a class="btn-figma" href="https://www.figma.com/make/Fuj4oSMqM8DqFP4CnJZigg/Buyitly---IHC-Juno-C4?code-node-id=0-6&p=f&t=fU9dZR1tnpxUW71F-0&fullscreen=1" target="_blank" rel="noopener noreferrer">Acessar Protótipo Funcional no Figma 🚀</a>
+      </div>
+    </div>`
+},
+
+// 2 — SUMÁRIO
+{
+  type:'toc',
+  kicker:'Roteiro',
+  title:'Sumário',
+  html:`
+    <ol class="toc-list">
+      <li><span class="num">01</span><span class="lbl">Introdução ao Contexto 4<span class="sub">O problema da devolução e a proposta do Buyitly</span></span></li>
+      <li><span class="num">02</span><span class="lbl">A situação-problema<span class="sub">Por que este caso importa para a IHC</span></span></li>
+      <li><span class="num">03</span><span class="lbl">Stakeholders e interesses em tensão<span class="sub">Quem participa e o que cada parte disputa</span></span></li>
+      <li><span class="num">04</span><span class="lbl">Contexto real de uso<span class="sub">Ação situada e design contextual</span></span></li>
+      <li><span class="num">05</span><span class="lbl">Metas e critérios de qualidade<span class="sub">Eficácia, eficiência, satisfação e comunicabilidade</span></span></li>
+      <li><span class="num">06</span><span class="lbl">Prototipação do fluxo completo<span class="sub">Das telas iniciais à exceção e ao fechamento</span></span></li>
+      <li><span class="num">07</span><span class="lbl">Fundamentação teórica<span class="sub">Affordances, golfos e engenharia semiótica</span></span></li>
+      <li><span class="num">08</span><span class="lbl">Avaliação da proposta e conclusão<span class="sub">Como testar e o que aprendemos</span></span></li>
+    </ol>`
+},
+
+// 3 — INTRODUÇÃO
+{
+  type:'text',
+  kicker:'01 · Introdução',
+  title:'O Contexto 4: logística reversa e devolução de produtos',
+  html:`
+    <p>O comércio eletrônico transformou a compra em um ato quase instantâneo: poucos toques separam o desejo de um produto da confirmação do pedido. Mas essa fluidez tem uma contraparte pouco explorada pelo design de interfaces — o momento em que a compra <strong>dá errado</strong>. O produto chega com defeito, em tamanho incorreto, diferente do anunciado, ou simplesmente o cliente se arrepende. É nesse ponto que entra a logística reversa, o processo de trazer o item de volta ao vendedor e devolver o valor pago ao consumidor.</p>
+    <p>O Contexto 4, objeto deste seminário, trata exatamente desse fluxo, materializado no aplicativo fictício <strong>Buyitly</strong>. Diferentemente da jornada de compra, amplamente estudada e otimizada pelas empresas, a jornada de devolução costuma ser tratada como um apêndice do sistema: menos visível, menos polida, frequentemente terceirizada para um canal de atendimento humano lento e genérico.</p>
+    <p>Nossa proposta parte de uma premissa simples, mas com implicações profundas para a IHC: se a compra é desenhada para gerar confiança e desejo, a devolução precisa ser desenhada para <em>preservar</em> essa confiança quando algo sai do previsto. É esse fluxo — solicitar, escolher o método de envio, acompanhar o status, lidar com uma exceção e, por fim, ser reembolsado — que analisamos e prototipamos ao longo desta apresentação.</p>`
+},
+
+// 4 — SITUAÇÃO-PROBLEMA
+{
+  type:'text',
+  kicker:'02 · Situação-problema',
+  title:'Por que isso importa na visão da IHC',
+  html:`
+    <p>Um princípio central da Interação Humano-Computador é que as Tecnologias de Informação e Comunicação não são meras ferramentas neutras que executam tarefas predefinidas: elas <strong>transformam a prática social</strong> e reconfiguram rotinas inteiras. Quando um aplicativo de e-commerce se torna o único caminho possível para resolver um problema — como devolver um produto — a tecnologia deixa de apenas mediar a ação e passa a <em>governá-la</em>. O usuário não pode simplesmente "devolver o produto"; ele só pode fazer aquilo que a interface permite, na ordem que a interface impõe.</p>
+    <p>É exatamente nesse ponto que reside a importância do Contexto 4. Um processo de devolução mal desenhado — com passos ambíguos, falta de feedback sobre o status do reembolso, ou barreiras artificiais como a exigência de contato telefônico — não é apenas um inconveniente pontual. Ele comunica ao usuário, de forma silenciosa mas eficaz, que a empresa não está genuinamente do seu lado no momento em que ele mais precisa de suporte.</p>
+    <p>A confiança do consumidor em uma plataforma de e-commerce não se constrói apenas na experiência de compra bem-sucedida, mas sobretudo na forma como a plataforma responde quando as coisas <strong>não</strong> saem como esperado. Um fluxo de devolução frustrante quebra essa confiança de maneira desproporcional ao tamanho do problema original, porque revela como o sistema trata o usuário quando ele está em posição de vulnerabilidade.</p>`
+},
+
+// 5 — STAKEHOLDERS
+{
+  type:'cards',
+  kicker:'03 · Stakeholders',
+  title:'Identificação dos stakeholders',
+  html:`
+    <div class="card-grid">
+      <div class="card"><h3>Consumidor final (usuário)</h3><p>A pessoa que comprou o produto e agora precisa devolvê-lo. Busca um processo rápido, claro e com o mínimo de esforço cognitivo e burocrático possível, especialmente por já estar em uma situação de insatisfação.</p></div>
+      <div class="card"><h3>Equipe de suporte / atendimento</h3><p>Responsável por intermediar casos que a interface não resolve sozinha. Seu interesse é reduzir o volume de chamados repetitivos, o que só ocorre se o autoatendimento digital for realmente eficaz.</p></div>
+      <div class="card"><h3>Setor de logística e estoque</h3><p>Cuida do recebimento físico do produto devolvido, da conferência de estado e da reintegração (ou descarte) do item. Precisa de informações precisas e antecipadas sobre o que está retornando.</p></div>
+      <div class="card"><h3>Gestores do e-commerce</h3><p>Responsáveis pelos indicadores de negócio: custo logístico, taxa de fraude em devoluções, satisfação do cliente (NPS) e retenção. Equilibram a experiência do usuário com a sustentabilidade financeira da operação.</p></div>
+    </div>`
+},
+
+// 6 — INTERESSES EM TENSÃO
+{
+  type:'text',
+  kicker:'03 · Stakeholders',
+  title:'Interesses em tensão',
+  html:`
+    <p>Nenhum sistema de devolução é neutro: cada decisão de design distribui custo e conveniência entre as partes envolvidas. De um lado, o <strong>usuário</strong> quer um reembolso rápido, sem atrito, sem precisar justificar-se extensivamente e, idealmente, sem sair de casa. Do outro, a <strong>empresa</strong> precisa manter controle sobre o processo: verificar se o produto realmente será devolvido em condições aceitáveis, mitigar fraudes (como devoluções de itens usados ou trocados) e minimizar o custo logístico de cada devolução, que muitas vezes supera o valor do produto.</p>
+    <p>Esse é o cerne do que projetar uma interface de devolução realmente significa: <em>decidir quem ganha facilidade e quem assume o custo da ação</em>. Uma interface que exige múltiplas etapas de verificação protege a empresa, mas transfere carga cognitiva e tempo ao usuário. Uma interface que aprova reembolsos automaticamente protege o usuário, mas expõe a empresa a risco financeiro maior.</p>
+    <p>O Buyitly, como veremos na prototipação, busca um meio-termo: automatiza o que pode ser automatizado com segurança (geração de código de postagem, acompanhamento por timeline) e reserva a intervenção humana para os casos de exceção genuína — como um problema no envio detectado apenas durante o transporte.</p>`
+},
+
+// 7 — CONTEXTO REAL DE USO
+{
+  type:'text',
+  kicker:'04 · Contexto de uso',
+  title:'Contexto real de uso: ação situada',
+  html:`
+    <p>A literatura de IHC, a partir do conceito de <strong>Ação Situada</strong> proposto por Lucy Suchman, nos alerta contra tratar o usuário como uma entidade abstrata que segue planos racionais e lineares. Na prática, a ação humana é moldada momento a momento pelas circunstâncias concretas em que ocorre — e isso é particularmente verdadeiro no cenário de uma devolução.</p>
+    <p>O usuário que abre o Buyitly para devolver um produto raramente está em um estado neutro. Ele frequentemente está <strong>frustrado</strong> (o produto não atendeu à expectativa), com <strong>pressa</strong> (quer resolver o problema entre uma tarefa e outra do dia) e <strong>inseguro</strong> (não sabe se vai realmente receber o dinheiro de volta, nem em quanto tempo). Esse estado emocional e temporal não é um detalhe periférico: ele deve orientar decisões centrais de design.</p>
+    <p>Some-se a isso o fato de que grande parte dessas interações ocorre em contexto <strong>mobile</strong>, muitas vezes com distrações no ambiente — em pé, em um transporte público, entre outras tarefas. O princípio do Design Contextual reforça que entender esse cenário real de uso, e não apenas o fluxo idealizado em um fluxograma, é o que diferencia uma interface tecnicamente funcional de uma interface genuinamente utilizável.</p>`
+},
+
+// 8 — METAS E CRITÉRIOS
+{
+  type:'criteria',
+  kicker:'05 · Metas de qualidade',
+  title:'De metas amplas a critérios mensuráveis',
+  html:`
+    <p style="max-width:820px;margin-bottom:22px;color:var(--ink-soft);">Uma meta ampla como "melhorar a experiência de devolução" não é acionável por si só. Ela precisa ser desdobrada em critérios de qualidade concretos e observáveis, que orientam tanto o design quanto a avaliação posterior:</p>
+    <div class="crit-list">
+      <div class="crit-row"><div class="label">Eficácia</div><div class="desc">O usuário consegue gerar o código de postagem e concluir a solicitação de devolução sem precisar contatar o suporte humano em nenhum momento do fluxo padrão.</div></div>
+      <div class="crit-row"><div class="label">Eficiência</div><div class="desc">Redução do número de passos e telas necessárias entre a decisão de devolver e a confirmação da solicitação, minimizando cliques e tempo de tarefa.</div></div>
+      <div class="crit-row"><div class="label">Satisfação (pragmática e hedônica)</div><div class="desc">O usuário sente confiança de que o estorno realmente ocorrerá — satisfação pragmática pela tarefa cumprida e hedônica pela sensação de controle e tranquilidade.</div></div>
+      <div class="crit-row"><div class="label">Comunicabilidade</div><div class="desc">A política de devolução (prazos, condições, responsabilidades) é comunicada com clareza suficiente para que o usuário não precise interpretar ou adivinhar regras.</div></div>
+    </div>`
+},
+
+// 9 — PROTOTIPAÇÃO 1
+{
+  type:'images',
+  kicker:'06 · Prototipação',
+  title:'O ponto de partida: clareza na interface inicial',
+  figmaBanner:`
+    <p>Para uma melhor experiência durante a análise de heurísticas e fluxos, acompanhe interagindo diretamente no protótipo:</p>
+    <a class="btn-figma-secondary" href="https://www.figma.com/make/Fuj4oSMqM8DqFP4CnJZigg/Buyitly---IHC-Juno-C4?code-node-id=0-6&p=f&t=fU9dZR1tnpxUW71F-0&fullscreen=1" target="_blank" rel="noopener noreferrer">Visualizar fluxo interativo no Figma</a>`,
+  intro:`As primeiras telas do Buyitly estabelecem o terreno sobre o qual toda a jornada de devolução se apoia. A tela Home apresenta uma navegação enxuta, sem ruído visual competindo pela atenção do usuário, enquanto a tela "Meus Pedidos" organiza o histórico de compras de forma escaneável — cada pedido é uma unidade visual independente, com status claramente sinalizado. Essa clareza inicial cumpre uma função importante: reduz a carga cognitiva antes mesmo de o usuário decidir devolver algo, e sinaliza, por meio da própria organização visual, que o pedido específico está sempre acessível e rastreável.`,
+  images:[
+    {src:'images/Tela 1 — Home.png', alt:'Home', caption:'Tela 1 — Home'},
+    {src:'images/Tela 2 — Meus Pedidos.png', alt:'Meus Pedidos', caption:'Tela 2 — Meus Pedidos'}
+  ]
+},
+
+// 10 — PROTOTIPAÇÃO 2
+{
+  type:'images',
+  kicker:'06 · Prototipação',
+  title:'Detalhes do pedido e início do fluxo de devolução',
+  intro:`Ao acessar os detalhes de um pedido específico, o usuário encontra informações consolidadas — itens, valores, datas — e, criticamente, uma ação claramente sinalizada para iniciar a devolução. Essa affordance não compete visualmente com outras ações do pedido (como reordenar ou avaliar); ela é discreta o suficiente para não sugerir que a devolução é o caminho esperado, mas visível o suficiente para ser encontrada sem esforço no momento em que o usuário precisa dela. A tela "Iniciar Devolução" então convida à ação com linguagem direta, evitando jargões administrativos que poderiam gerar hesitação.`,
+  images:[
+    {src:'images/Tela 3 — Detalhes do Pedido.png', alt:'Detalhes do Pedido', caption:'Tela 3 — Detalhes do Pedido'},
+    {src:'images/Tela 4 — Iniciar Devolução.png', alt:'Iniciar Devolução', caption:'Tela 4 — Iniciar Devolução'}
+  ]
+},
+
+// 11 — PROTOTIPAÇÃO 3
+{
+  type:'images',
+  kicker:'06 · Prototipação',
+  title:'Escolha do método de envio e confirmação',
+  intro:`Um dos pontos mais delicados do fluxo é a escolha de como o produto retornará à empresa. Aqui, o design aposta em <strong>opções claras e mutuamente exclusivas</strong> — por exemplo, postagem em agência dos Correios versus coleta agendada — em vez de um formulário livre que abriria espaço para erro de preenchimento. Essa é uma aplicação direta do conceito de <em>constraints</em> (restrições): ao limitar as escolhas possíveis a alternativas válidas, a interface previne erros antes que eles ocorram, em vez de apenas tratá-los depois. A tela de confirmação, por sua vez, resume a solicitação antes do envio definitivo, dando ao usuário uma última oportunidade de revisão — um mecanismo clássico de prevenção de erros irreversíveis.`,
+  images:[
+    {src:'images/Tela 5 — Método de Envio.png', alt:'Método de Envio', caption:'Tela 5 — Método de Envio'},
+    {src:'images/Tela 6 — Confirmação.png', alt:'Confirmação', caption:'Tela 6 — Confirmação'}
+  ]
+},
+
+// 12 — PROTOTIPAÇÃO 4
+{
+  type:'images',
+  kicker:'06 · Prototipação',
+  title:'Feedback de sucesso e acompanhamento',
+  intro:`Imediatamente após a confirmação, a tela de Sucesso oferece um retorno inequívoco de que a solicitação foi registrada — um princípio básico, mas frequentemente negligenciado, de visibilidade do estado do sistema. Esse feedback imediato tem um papel psicológico importante: reduz a ansiedade do usuário, que sai da tarefa com a certeza de que sua ação teve efeito, em vez de permanecer em dúvida sobre se o clique "funcionou". A tela de Acompanhamento, em seguida, consolida o código de postagem e as instruções necessárias em um único lugar de referência, ao qual o usuário pode retornar sempre que precisar.`,
+  images:[
+    {src:'images/Tela 7 — Sucesso.png', alt:'Sucesso', caption:'Tela 7 — Sucesso'},
+    {src:'images/Tela 8 — Acompanhamento.png', alt:'Acompanhamento', caption:'Tela 8 — Acompanhamento'}
+  ]
+},
+
+// 13 — PROTOTIPAÇÃO 5 (status)
+{
+  type:'images',
+  singleImage:true,
+  kicker:'06 · Prototipação',
+  title:'Transparência no status: a linha do tempo',
+  intro:`A tela "Em Análise" materializa um dos princípios mais valiosos para reduzir a ansiedade em processos assíncronos: a <strong>visibilidade do status do sistema</strong> por meio de uma timeline. Em vez de deixar o usuário sem informação entre o envio do produto e o reembolso final — um "buraco negro" de incerteza —, a interface expõe cada etapa intermediária (recebido, em análise, aprovado) como um marco visível. Essa timeline também funciona como um gatilho: é o ponto de entrada natural para notificar o usuário caso uma exceção seja identificada durante a análise, como veremos no próximo slide.`,
+  images:[
+    {src:'images/Tela 9 — Em Análise (+ gatilho).png', alt:'Em Análise', caption:'Tela 9 — Em Análise (+ gatilho)'}
+  ]
+},
+
+// 14 — EXCEÇÃO
+{
+  type:'images',
+  kicker:'06 · Prototipação',
+  title:'Tratamento de exceções: o e-mail e a ação',
+  intro:`Este é um dos momentos mais críticos do fluxo do ponto de vista de IHC. Quando algo sai do previsto — por exemplo, o produto devolvido chega danificado ou incompleto —, o sistema <strong>não</strong> deixa o usuário descobrir o problema sozinho ao abrir o aplicativo. Em vez disso, o Buyitly notifica proativamente por e-mail, em um canal que o usuário já monitora rotineiramente, e só depois direciona-o de volta à plataforma para tomar uma ação concreta diante da exceção. Essa ordem — <strong>notificação proativa primeiro, ação na plataforma depois</strong> — evita que o usuário sinta que o processo simplesmente "travou" sem explicação, e transforma um momento potencialmente frustrante em um momento de controle informado.`,
+  images:[
+    {src:'images/Tela 12 — E-mail da Loja.png', alt:'E-mail da Loja', caption:'Tela 12 — E-mail da Loja'},
+    {src:'images/Tela 11 — Exceção Problema.png', alt:'Exceção Problema', caption:'Tela 11 — Exceção Problema'}
+  ]
+},
+
+// 15 — RESOLUÇÃO
+{
+  type:'images',
+  kicker:'06 · Prototipação',
+  title:'Resolução e fechamento do ciclo',
+  intro:`O fluxo se encerra com a tela de Resolução/Recibo, que documenta formalmente o desfecho da devolução — o valor estornado, a data e o comprovante — dando ao usuário um registro definitivo de que a tarefa foi concluída com sucesso. Em seguida, a tela de Avaliação da Devolução convida o usuário a registrar sua satisfação com o próprio processo de devolução, não apenas com o produto original. Esse último passo cumpre uma dupla função: fecha psicologicamente o ciclo para o usuário, que sente que sua voz foi ouvida, e gera para a empresa um dado valioso de melhoria contínua sobre um processo historicamente pouco medido.`,
+  images:[
+    {src:'images/Tela 10 — Resolução Recibo.png', alt:'Resolução Recibo', caption:'Tela 10 — Resolução Recibo'},
+    {src:'images/Tela 13 — Avaliação da Devolução.png', alt:'Avaliação', caption:'Tela 13 — Avaliação da Devolução'}
+  ]
+},
+
+// 16 — TEORIA I
+{
+  type:'text',
+  kicker:'07 · Fundamentação teórica',
+  title:'Affordances, signifiers e feedback',
+  html:`
+    <p>Donald Norman distingue com precisão dois conceitos frequentemente confundidos: <strong>affordances</strong> são as possibilidades reais de ação que um objeto oferece, enquanto <strong>signifiers</strong> são os sinais perceptíveis que comunicam onde e como essa ação pode ocorrer. Um botão pode "afford" o clique, mas é sua cor, seu contorno e sua posição que sinalizam, ao usuário, que ali existe uma ação possível.</p>
+    <p>No Buyitly, essa distinção aparece de forma sistemática: o botão de "Iniciar Devolução" utiliza cor e hierarquia visual consistentes com outras ações primárias do aplicativo, de modo que o usuário reconhece o padrão sem precisar aprendê-lo de novo a cada tela. As cores também carregam significado semântico estável — tons de âmbar ou amarelo para estados "em análise", tons de verde ou azul-petróleo para conclusão bem-sucedida — criando um vocabulário visual coerente que reduz a necessidade de leitura textual detalhada em cada etapa.</p>
+    <p>O <strong>feedback</strong>, por fim, é o elo que fecha esse ciclo perceptivo: cada ação do usuário — confirmar um método de envio, enviar uma solicitação — é seguida por uma resposta visual imediata que confirma que o sistema recebeu e processou aquela ação, evitando o vácuo de incerteza que caracteriza interfaces mal projetadas.</p>`
+},
+
+// 17 — TEORIA II
+{
+  type:'text',
+  kicker:'07 · Fundamentação teórica',
+  title:'Golfos de execução e de avaliação',
+  html:`
+    <p>O modelo dos "golfos" (gulfs), também proposto por Norman, descreve as distâncias cognitivas que o usuário precisa atravessar ao interagir com um sistema. O <strong>golfo de execução</strong> é a distância entre a intenção do usuário e as ações concretas necessárias para realizá-la — quanto maior essa distância, mais o usuário precisa deduzir "o que fazer" para atingir seu objetivo. O <strong>golfo de avaliação</strong>, por sua vez, é a distância entre o estado atual do sistema e a compreensão que o usuário tem desse estado — quanto maior, mais o usuário precisa interpretar o que aconteceu.</p>
+    <p>No fluxo do Buyitly, o golfo de execução é reduzido por meio de um design que <strong>guia o usuário passo a passo</strong>: cada tela apresenta uma única decisão clara a ser tomada (iniciar devolução, escolher método, confirmar), em vez de expor múltiplas opções simultâneas que exigiriam planejamento antecipado por parte do usuário.</p>
+    <p>Já o golfo de avaliação é mitigado principalmente pela <strong>linha do tempo</strong> introduzida na tela "Em Análise" e pelo feedback constante em cada etapa. Ao tornar o estado interno do sistema — onde exatamente está a solicitação de devolução — visível e compreensível, a interface elimina a necessidade de o usuário inferir ou adivinhar o que está acontecendo "nos bastidores" do processo.</p>`
+},
+
+// 18 — TEORIA III
+{
+  type:'text',
+  kicker:'07 · Fundamentação teórica',
+  title:'Engenharia semiótica: a interface como interlocutora',
+  html:`
+    <p>A Engenharia Semiótica, desenvolvida por Clarisse Sieckenius de Souza, propõe uma lente complementar às teorias cognitivas: a interface não é apenas um conjunto de controles, mas um <strong>discurso do designer</strong> dirigido ao usuário. Em outras palavras, toda interface "diz" algo ao usuário em nome de quem a projetou, mesmo quando não há texto explícito — essa mensagem implícita é chamada de <em>metamensagem</em>.</p>
+    <p>No caso do Buyitly, a metamensagem que o design comunica, do início ao fim do fluxo de devolução, pode ser resumida como: <strong>"nós cuidamos do seu problema de forma transparente, mesmo quando algo dá errado."</strong> Essa metamensagem se manifesta em decisões concretas — a notificação proativa por e-mail antes de qualquer ação exigida do usuário, a timeline que expõe o status real do processo, a linguagem direta e não-burocrática em cada tela.</p>
+    <p>Sob essa ótica, a interface atua como <strong>interlocutora do designer</strong>: é ela quem, na ausência de um atendente humano, precisa sustentar sozinha o diálogo com o usuário, antecipando dúvidas, explicando o que está acontecendo e demonstrando, por meio do próprio comportamento do sistema, que a empresa assume responsabilidade pelo processo — inclusive, e principalmente, quando ele não corre como planejado.</p>`
+},
+
+// 19 — AVALIAÇÃO
+{
+  type:'text',
+  kicker:'08 · Avaliação',
+  title:'Como avaliar a proposta no mundo real',
+  html:`
+    <p>Uma proposta de design de interação só se sustenta se for submetida a avaliação empírica, e não apenas à justificativa teórica apresentada até aqui. Propomos um <strong>teste de usabilidade baseado em cenários</strong> como método principal: participantes representativos do público-alvo seriam convidados a executar tarefas realistas dentro do protótipo do Buyitly — por exemplo, "você recebeu um produto no tamanho errado; solicite a devolução e acompanhe o processo até o reembolso".</p>
+    <p>O cenário de maior interesse analítico é justamente o da <strong>exceção</strong> (Tela 11): observar se os usuários, ao receberem a notificação por e-mail e retornarem à plataforma, conseguem compreender o problema e agir sobre ele sem frustração excessiva ou necessidade de suporte externo. Esse é o teste decisivo da hipótese central deste trabalho — de que uma comunicação proativa e bem estruturada reduz o atrito percebido mesmo em cenários adversos.</p>
+    <p>Complementarmente, a proposta pode ser avaliada por meio de uma <strong>análise heurística</strong>, aplicando o conjunto de dez heurísticas de usabilidade de Nielsen (visibilidade do status do sistema, correspondência entre sistema e mundo real, controle e liberdade do usuário, prevenção de erros, entre outras) como checklist estruturado para identificar pontos cegos que a avaliação com usuários reais possa não capturar isoladamente.</p>`
+},
+
+// 20 — CONCLUSÃO
+{
+  type:'refs',
+  kicker:'Conclusão',
+  title:'Conclusão e referências',
+  html:`
+    <p>Ao longo desta apresentação, buscamos demonstrar que aplicar a lente da Interação Humano-Computador ao fluxo de devolução do Buyitly transforma o que poderia ser tratado como um procedimento burocrático secundário em uma jornada desenhada deliberadamente para <strong>gerar e preservar confiança</strong>. Cada decisão — da clareza das telas iniciais à ordem entre notificação e ação na exceção, passando pela linha do tempo que torna o status sempre visível — foi analisada à luz de conceitos centrais da disciplina: ação situada, affordances e signifiers, golfos de execução e avaliação, e engenharia semiótica.</p>
+    <p>Mais do que resolver um problema técnico de fluxo, o desafio do Contexto 4 nos mostrou que devolução é, antes de tudo, um problema de <em>comunicação e confiança</em> mediado por interface — e que é precisamente aí que a IHC tem mais a contribuir.</p>
+  `,
+  refText:`Interação humano-computador / Simone Diniz Junqueira Barbosa, Bruno Santana da Silva. – Rio de Janeiro: Elsevier, 2010.`
+},
+
+];
+
+const TOTAL = slides.length;
+let current = 0;
+const deck = document.getElementById('deck');
+const pagenum = document.getElementById('pagenum');
+const progressBar = document.getElementById('progress-bar');
+
+function renderImagesBlock(slide){
+  const wrapClass = slide.singleImage ? 'img-row img-single' : 'img-row';
+  const imgs = slide.images.map(im => `
+    <figure class="img-block">
+      <img src="${im.src}" alt="${im.alt}" loading="lazy">
+      <figcaption>${im.caption}</figcaption>
+    </figure>`).join('');
+  return `<div class="${wrapClass}">${imgs}</div>`;
+}
+
+function buildSlideEl(slide, idx){
+  const el = document.createElement('section');
+  el.className = 'slide ' + (slide.type === 'cover' ? 'cover' : '');
+  el.dataset.index = idx;
+
+  if(slide.type === 'cover'){
+    el.innerHTML = slide.html;
+    return el;
+  }
+
+  let inner = `<div class="content-wrap">`;
+  if(slide.kicker) inner += `<span class="kicker">${slide.kicker}</span>`;
+  if(slide.title) inner += `<h2 class="slide-title">${slide.title}</h2>`;
+
+  if(slide.type === 'toc' || slide.type === 'cards' || slide.type === 'criteria'){
+    inner += slide.html;
+  } else if(slide.type === 'text'){
+    inner += `<div class="slide-body">${slide.html}</div>`;
+  } else if(slide.type === 'images'){
+    if(slide.figmaBanner) inner += `<div class="figma-banner">${slide.figmaBanner}</div>`;
+    inner += `<div class="slide-body" style="margin-bottom:20px;">${slide.intro}</div>`;
+    inner += renderImagesBlock(slide);
+  } else if(slide.type === 'refs'){
+    inner += `<div class="slide-body">${slide.html}</div>`;
+    inner += `<div class="ref-box">${slide.refText}</div>`;
+  }
+  inner += `</div>`;
+  el.innerHTML = inner;
+  return el;
+}
+
+slides.forEach((s, i) => deck.appendChild(buildSlideEl(s, i)));
+const slideEls = Array.from(document.querySelectorAll('.slide'));
+
+function show(idx){
+  if(idx < 0 || idx >= TOTAL) return;
+  slideEls[current].classList.remove('active');
+  current = idx;
+  slideEls[current].classList.add('active');
+  slideEls[current].scrollTop = 0;
+  pagenum.textContent = (current + 1) + ' / ' + TOTAL;
+  progressBar.style.width = ((current + 1) / TOTAL * 100) + '%';
+}
+
+function next(){ show(current + 1); }
+function prev(){ show(current - 1); }
+
+document.getElementById('zoneRight').addEventListener('click', next);
+document.getElementById('zoneLeft').addEventListener('click', prev);
+
+document.addEventListener('keydown', (e) => {
+  const k = e.key.toLowerCase();
+  if(k === 'd' || k === 'arrowright'){ e.preventDefault(); next(); }
+  else if(k === 'a' || k === 'arrowleft'){ e.preventDefault(); prev(); }
+});
+
+show(0);
+</script>
+</body>
+</html>
